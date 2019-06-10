@@ -40,31 +40,48 @@ export class DBankService {
     $: CheerioStatic,
     fileNameWithoutExtension: string,
   ): Transaction[] {
-    // const selector: string =
-    //   fileNameWithoutExtension >= '201408' ? '.hasSEPADetails' : 'tr';
-    const selector: string = '.hasSEPADetails';
     const transactions: Transaction[] = [];
 
-    $(selector).each((index, element) => {
-      const transactionCheerio = $(element);
-      const detailsText = this.resolveDetailsText(transactionCheerio.next());
-
-      transactions.push({
-        bookingDate: this.decomposeDate(
-          $('[headers="bTentry"]', element).text(),
-        ),
-        credit: this.resolveCreditFromTransactionCheerio($(element)),
-        currency: $('[headers="bTcurrency"]', element).text(),
-        details: detailsText,
-        executionDate: this.decomposeDate(
-          $('[headers="bTvalue"]', element).text(),
-        ),
-        purpose: $('[headers="bTpurpose"]', element)
-          .text()
-          .trim(),
-        tags: this.initTags(transactionCheerio, detailsText),
+    if (fileNameWithoutExtension < '201408') {
+      $('tr').each((index, element) => {
+        transactions.push({
+          bookingDate: this.decomposeDate(
+            $('[headers="valueDate"]', element).text(),
+          ),
+          credit: this.resolveCreditFromTransactionCheerio($(element)),
+          currency: $('[headers="currency"]', element).text(),
+          details: $('[headers="description"]', element)
+            .text()
+            .trim(),
+          executionDate: this.decomposeDate(
+            $('[headers="postingDate"]', element).text(),
+          ),
+          purpose: '',
+          tags: [],
+        });
       });
-    });
+    } else {
+      $('.hasSEPADetails').each((index, element) => {
+        const transactionCheerio = $(element);
+        const detailsText = this.resolveDetailsText(transactionCheerio.next());
+
+        transactions.push({
+          bookingDate: this.decomposeDate(
+            $('[headers="bTentry"]', element).text(),
+          ),
+          credit: this.resolveCreditFromTransactionCheerio($(element)),
+          currency: $('[headers="bTcurrency"]', element).text(),
+          details: detailsText,
+          executionDate: this.decomposeDate(
+            $('[headers="bTvalue"]', element).text(),
+          ),
+          purpose: $('[headers="bTpurpose"]', element)
+            .text()
+            .trim(),
+          tags: this.initTags(transactionCheerio, detailsText),
+        });
+      });
+    }
 
     return transactions;
   }
@@ -128,8 +145,6 @@ export class DBankService {
   }
 
   initTags(transactionCheerio: Cheerio, detailsText: string): TransactionTag[] {
-    // PHONE = 'PHONE',
-
     if (isDrugTransaction(detailsText)) {
       return [TransactionTag.DRUG];
     } else if (isGroceryTransaction(detailsText)) {
@@ -147,10 +162,10 @@ export class DBankService {
 
   resolveCreditFromTransactionCheerio(transactionCheerio: Cheerio): number {
     const creditValue = this.formatCurrencyValueAsNumber(
-      transactionCheerio.find('[headers="bTcredit"]').text(),
+      transactionCheerio.find('.credit').text(),
     );
     const debitValue = this.formatCurrencyValueAsNumber(
-      transactionCheerio.find('[headers="bTdebit"]').text(),
+      transactionCheerio.find('.debit').text(),
     );
 
     return creditValue || debitValue;
