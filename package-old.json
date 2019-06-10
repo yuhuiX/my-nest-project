@@ -1,0 +1,21 @@
+{
+  "name": "my-nest-project",
+  "version": "0.1.0",
+  "description": "My nest js project for simple API",
+  "scripts": {
+    "nest": "nest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuhuiX/my-nest-project.git"
+  },
+  "author": "yuhui.xiong.2018@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yuhuiX/my-nest-project/issues"
+  },
+  "homepage": "https://github.com/yuhuiX/my-nest-project#readme",
+  "dependencies": {
+    "@nestjs/cli": "^6.5.0"
+  }
+}
