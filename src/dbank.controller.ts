@@ -1,14 +1,19 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { DBankService } from './dbank.service';
-import { Transaction } from './dbank.model';
+import { Transaction, MonthlyTransactionReportRequest } from './dbank.model';
 
 @Controller('dbank')
 export class DBankController {
   constructor(private readonly dBankService: DBankService) {}
 
   @Post()
-  createMonthlyTransactionReport(): Promise<Transaction[]> {
-    return this.dBankService.createMonthlyTransactionReport();
+  createMonthlyTransactionReport(
+    @Body()
+    monthlyTransactionReportRequest: MonthlyTransactionReportRequest,
+  ): Promise<void> {
+    return this.dBankService.createMonthlyTransactionReport(
+      monthlyTransactionReportRequest,
+    );
   }
 
   @Get()

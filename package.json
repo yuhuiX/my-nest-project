@@ -25,6 +25,7 @@
     "@nestjs/platform-express": "^6.0.4",
     "@nestjs/websockets": "^6.0.4",
     "cheerio": "^1.0.0-rc.3",
+    "fs-extra": "^8.0.1",
     "reflect-metadata": "0.1.13",
     "rimraf": "2.6.3",
     "rxjs": "6.4.0"
@@ -33,6 +34,7 @@
     "@nestjs/testing": "6.1.1",
     "@types/cheerio": "^0.22.11",
     "@types/express": "4.16.1",
+    "@types/fs-extra": "^7.0.0",
     "@types/jest": "24.0.11",
     "@types/node": "11.13.4",
     "@types/supertest": "2.0.7",
