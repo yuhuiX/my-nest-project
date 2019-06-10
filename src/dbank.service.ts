@@ -40,50 +40,71 @@ export class DBankService {
     $: CheerioStatic,
     fileNameWithoutExtension: string,
   ): Transaction[] {
-    const transactions: Transaction[] = [];
-
     if (fileNameWithoutExtension < '201408') {
-      $('tr').each((index, element) => {
-        transactions.push({
-          bookingDate: this.decomposeDate(
-            $('[headers="valueDate"]', element).text(),
-          ),
-          credit: this.resolveCreditFromTransactionCheerio($(element)),
-          currency: $('[headers="currency"]', element).text(),
-          details: $('[headers="description"]', element)
-            .text()
-            .trim(),
-          executionDate: this.decomposeDate(
-            $('[headers="postingDate"]', element).text(),
-          ),
-          purpose: '',
-          tags: [],
+      return $('tr')
+        .get()
+        .map(element => {
+          return {
+            bookingDate: this.decomposeDate(
+              $('[headers="valueDate"]', element).text(),
+            ),
+            credit: this.resolveCreditFromTransactionCheerio($(element)),
+            currency: $('[headers="currency"]', element).text(),
+            details: $('[headers="description"]', element)
+              .text()
+              .trim(),
+            executionDate: this.decomposeDate(
+              $('[headers="postingDate"]', element).text(),
+            ),
+            purpose: '',
+            tags: [],
+          };
         });
-      });
     } else {
-      $('.hasSEPADetails').each((index, element) => {
-        const transactionCheerio = $(element);
-        const detailsText = this.resolveDetailsText(transactionCheerio.next());
+      let isLastElement: boolean = true;
 
-        transactions.push({
-          bookingDate: this.decomposeDate(
-            $('[headers="bTentry"]', element).text(),
-          ),
-          credit: this.resolveCreditFromTransactionCheerio($(element)),
-          currency: $('[headers="bTcurrency"]', element).text(),
-          details: detailsText,
-          executionDate: this.decomposeDate(
-            $('[headers="bTvalue"]', element).text(),
-          ),
-          purpose: $('[headers="bTpurpose"]', element)
-            .text()
-            .trim(),
-          tags: this.initTags(transactionCheerio, detailsText),
-        });
-      });
+      return $('tbody > tr')
+        .get()
+        .reduceRight((transactionList, element) => {
+          const transactionCheerio = $(element);
+          const prevTransactionCheerio = transactionCheerio.prev();
+
+          if (
+            (isLastElement &&
+              prevTransactionCheerio &&
+              !prevTransactionCheerio.hasClass('hasSEPADetails')) ||
+            (!isLastElement && transactionCheerio.hasClass('hasSEPADetails'))
+          ) {
+            isLastElement = false;
+
+            const detailsText = this.resolveDetailsText(
+              transactionCheerio.next(),
+            );
+
+            transactionList.unshift({
+              bookingDate: this.decomposeDate(
+                $('[headers="bTentry"]', element).text(),
+              ),
+              credit: this.resolveCreditFromTransactionCheerio($(element)),
+              currency: $('[headers="bTcurrency"]', element).text(),
+              details: detailsText,
+              executionDate: this.decomposeDate(
+                $('[headers="bTvalue"]', element).text(),
+              ),
+              purpose: $('[headers="bTpurpose"]', element)
+                .text()
+                .trim(),
+              tags: this.initTags(
+                cheerio(
+                  transactionCheerio.html() + transactionCheerio.next().html(),
+                ),
+              ),
+            });
+          }
+
+          return transactionList;
+        }, []);
     }
-
-    return transactions;
   }
 
   async createMonthlyTransactionReport({
@@ -144,16 +165,18 @@ export class DBankService {
     return { data: 'Hello Master!' };
   }
 
-  initTags(transactionCheerio: Cheerio, detailsText: string): TransactionTag[] {
-    if (isDrugTransaction(detailsText)) {
+  initTags(transactionCheerio: Cheerio): TransactionTag[] {
+    const transactionText = transactionCheerio.text();
+
+    if (isDrugTransaction(transactionText)) {
       return [TransactionTag.DRUG];
-    } else if (isGroceryTransaction(detailsText)) {
+    } else if (isGroceryTransaction(transactionText)) {
       return [TransactionTag.GROCERY];
-    } else if (isIncomeTransaction(detailsText)) {
+    } else if (isIncomeTransaction(transactionText)) {
       return [TransactionTag.INCOME];
-    } else if (isInternetTransaction(detailsText)) {
+    } else if (isInternetTransaction(transactionText)) {
       return [TransactionTag.INTERNET];
-    } else if (isPhoneTransaction(detailsText)) {
+    } else if (isPhoneTransaction(transactionText)) {
       return [TransactionTag.PHONE];
     } else {
       return [TransactionTag.OTHER];
