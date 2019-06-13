@@ -211,13 +211,11 @@ export class DBankService {
     jsonFileName: string,
     monthlyTransactionReport: MonthlyTransactionReport,
   ): Promise<void> {
-    const filePath = `data/json/${jsonFileName}.js`;
+    const filePath = `data/json/${jsonFileName}.json`;
     await ensureFile(filePath);
     return writeFile(
       filePath,
-      `
-module.exports = ${JSON.stringify(monthlyTransactionReport, null, 2)};
-`,
+      JSON.stringify(monthlyTransactionReport, null, 2),
     );
   }
 }
