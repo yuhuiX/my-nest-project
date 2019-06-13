@@ -7,11 +7,11 @@ export class DBankController {
   constructor(private readonly dBankService: DBankService) {}
 
   @Post()
-  createMonthlyTransactionReport(
+  async createMonthlyTransactionReport(
     @Body()
     monthlyTransactionReportRequest: MonthlyTransactionReportRequest,
   ): Promise<void> {
-    return this.dBankService.createMonthlyTransactionReport(
+    await this.dBankService.createMonthlyTransactionReport(
       monthlyTransactionReportRequest,
     );
   }
