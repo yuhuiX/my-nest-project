@@ -61,49 +61,44 @@ export class DBankService {
           };
         });
     } else {
-      let isLastElement: boolean = true;
+      const transactionList = [];
 
-      return $('tbody > tr')
-        .get()
-        .reduceRight((transactionList, element) => {
-          const transactionCheerio = $(element);
-          const prevTransactionCheerio = transactionCheerio.prev();
+      $('tr.odd, tr.even').each((index, element) => {
+        const currentElement = $(element);
+        const prevElement = $(element).prev();
 
-          if (
-            (isLastElement &&
-              prevTransactionCheerio &&
-              !prevTransactionCheerio.hasClass('hasSEPADetails')) ||
-            (!isLastElement && transactionCheerio.hasClass('hasSEPADetails'))
-          ) {
-            isLastElement = false;
+        if (!currentElement.hasClass('hasSEPADetails')) {
+          const detailsText = prevElement.hasClass('hasSEPADetails')
+            ? this.resolveDetailsText(currentElement)
+            : '';
+          const tagHtml =
+            currentElement.html() +
+            (prevElement.hasClass('hasSEPADetails') ? prevElement.html() : '');
+          const transactionElement = prevElement.hasClass('hasSEPADetails')
+            ? prevElement
+            : currentElement;
 
-            const detailsText = this.resolveDetailsText(
-              transactionCheerio.next(),
-            );
+          transactionList.push({
+            bookingDate: this.decomposeDate(
+              $('[headers="bTentry"]', transactionElement).text(),
+            ),
+            credit: this.resolveCreditFromTransactionCheerio(
+              transactionElement,
+            ),
+            currency: $('[headers="bTcurrency"]', transactionElement).text(),
+            details: detailsText,
+            executionDate: this.decomposeDate(
+              $('[headers="bTvalue"]', transactionElement).text(),
+            ),
+            purpose: $('[headers="bTpurpose"]', transactionElement)
+              .text()
+              .trim(),
+            tags: this.initTags(cheerio(tagHtml)),
+          });
+        }
+      });
 
-            transactionList.unshift({
-              bookingDate: this.decomposeDate(
-                $('[headers="bTentry"]', element).text(),
-              ),
-              credit: this.resolveCreditFromTransactionCheerio($(element)),
-              currency: $('[headers="bTcurrency"]', element).text(),
-              details: detailsText,
-              executionDate: this.decomposeDate(
-                $('[headers="bTvalue"]', element).text(),
-              ),
-              purpose: $('[headers="bTpurpose"]', element)
-                .text()
-                .trim(),
-              tags: this.initTags(
-                cheerio(
-                  transactionCheerio.html() + transactionCheerio.next().html(),
-                ),
-              ),
-            });
-          }
-
-          return transactionList;
-        }, []);
+      return transactionList;
     }
   }
 
@@ -165,8 +160,8 @@ export class DBankService {
     return { data: 'Hello Master!' };
   }
 
-  initTags(transactionCheerio: Cheerio): TransactionTag[] {
-    const transactionText = transactionCheerio.text();
+  initTags(currentElement: Cheerio): TransactionTag[] {
+    const transactionText = currentElement.text();
 
     if (isDrugTransaction(transactionText)) {
       return [TransactionTag.DRUG];
@@ -183,12 +178,12 @@ export class DBankService {
     }
   }
 
-  resolveCreditFromTransactionCheerio(transactionCheerio: Cheerio): number {
+  resolveCreditFromTransactionCheerio(currentElement: Cheerio): number {
     const creditValue = this.formatCurrencyValueAsNumber(
-      transactionCheerio.find('.credit').text(),
+      currentElement.find('.credit').text(),
     );
     const debitValue = this.formatCurrencyValueAsNumber(
-      transactionCheerio.find('.debit').text(),
+      currentElement.find('.debit').text(),
     );
 
     return creditValue || debitValue;
