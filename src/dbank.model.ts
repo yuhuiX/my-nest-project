@@ -19,8 +19,11 @@ export interface Transaction {
   tags: string[];
 }
 
-export interface TransactionDate {
+export interface TransactionDate extends TransactionMonthYear {
   day: string;
+}
+
+export interface TransactionMonthYear {
   month: string;
   year: string;
 }

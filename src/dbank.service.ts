@@ -8,6 +8,7 @@ import {
   TransactionTag,
   MonthlyTransactionReport,
   MonthlyTransactionReportRequest,
+  TransactionMonthYear,
 } from './dbank.model';
 import { ensureFile, writeFile } from 'fs-extra';
 import {
@@ -157,10 +158,10 @@ export class DBankService {
   }
 
   async getMonthStartBalance(
-    monthlyTransactionReportRequest: MonthlyTransactionReportRequest,
+    transactionMonthYear: TransactionMonthYear,
   ): Promise<number> {
     const previousMonthFileName: string = this.getPreviousFileName(
-      monthlyTransactionReportRequest,
+      transactionMonthYear,
     );
 
     try {
@@ -173,10 +174,7 @@ export class DBankService {
     }
   }
 
-  getPreviousFileName({
-    month,
-    year,
-  }: MonthlyTransactionReportRequest): string {
+  getPreviousFileName({ month, year }: TransactionMonthYear): string {
     if (month === '01') {
       const fileNameMonth = '12';
       const fileNameYear = Number(year) - 1;
