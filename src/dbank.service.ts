@@ -110,7 +110,7 @@ export class DBankService {
       year,
       month,
     );
-    const html = await this.getHtmlFileContent(fileNameWithoutExtension);
+    const html = await this.readHtmlFileContent(fileNameWithoutExtension);
 
     // won't work correctly without <table> as containing <tr>s and <td>s
     const transactions = this.constructTransactions(
@@ -118,7 +118,7 @@ export class DBankService {
       fileNameWithoutExtension,
     );
 
-    const monthStartBalance = 0;
+    const monthStartBalance = await this.getMonthStartBalance({ month, year });
     return await this.writeMonthlyTransactionReportToFile(
       fileNameWithoutExtension,
       {
@@ -151,13 +151,40 @@ export class DBankService {
     );
   }
 
-  async getHtmlFileContent(fileName): Promise<string> {
-    return await readFile(`data/html/${fileName}.html`, 'utf8');
-  }
-
   getMonthlyTransactionReport(): object {
     // TODO
     return { data: 'Hello Master!' };
+  }
+
+  async getMonthStartBalance(
+    monthlyTransactionReportRequest: MonthlyTransactionReportRequest,
+  ): Promise<number> {
+    const previousMonthFileName: string = this.getPreviousFileName(
+      monthlyTransactionReportRequest,
+    );
+
+    try {
+      const previousMonthReport = await this.readJsonDataFileAsJson(
+        previousMonthFileName,
+      );
+      return previousMonthReport.monthEndBalance;
+    } catch {
+      return 0;
+    }
+  }
+
+  getPreviousFileName({
+    month,
+    year,
+  }: MonthlyTransactionReportRequest): string {
+    if (month === '01') {
+      const fileNameMonth = '12';
+      const fileNameYear = Number(year) - 1;
+
+      return `${fileNameYear}${fileNameMonth}`;
+    } else {
+      return (Number(year + month) - 1).toString();
+    }
   }
 
   initTags(currentElement: Cheerio): TransactionTag[] {
@@ -176,6 +203,20 @@ export class DBankService {
     } else {
       return [TransactionTag.OTHER];
     }
+  }
+
+  async readFileContent(filePath): Promise<string> {
+    return await readFile(filePath, 'utf8');
+  }
+
+  async readHtmlFileContent(fileName): Promise<string> {
+    return await this.readFileContent(`data/html/${fileName}.html`);
+  }
+
+  async readJsonDataFileAsJson(
+    fileName: string,
+  ): Promise<MonthlyTransactionReport> {
+    return JSON.parse(await this.readFileContent(`data/json/${fileName}.json`));
   }
 
   resolveCreditFromTransactionCheerio(currentElement: Cheerio): number {
