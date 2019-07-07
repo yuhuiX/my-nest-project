@@ -29,11 +29,16 @@ export interface TransactionMonthYear {
 }
 
 export enum TransactionTag {
+  BROADCAST = 'BROADCAST',
+  CINEMA = 'CINEMA',
   DRUG = 'DRUG',
   GROCERY = 'GROCERY',
   INCOME = 'INCOME',
   INTERNET = 'INTERNET',
-  PHONE = 'PHONE',
   OTHER = 'OTHER',
+  PHONE = 'PHONE',
+  PUBLIC_TRANSPORT = 'PUBLIC_TRANSPORT',
   RENT = 'RENT',
+  RESTAURANT = 'RESTAURANT',
+  WITHDRAWAL = 'WITHDRAWAL',
 }

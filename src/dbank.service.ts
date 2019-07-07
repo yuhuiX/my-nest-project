@@ -17,6 +17,12 @@ import {
   isInternetTransaction,
   isPhoneTransaction,
   isDrugTransaction,
+  isWithdrawalTransaction,
+  isRentTransaction,
+  isRestaurantTransaction,
+  isPublicTransportTransaction,
+  isCinemaTransaction,
+  isBroadcastTransaction,
 } from './dbank.tagRules.service';
 
 const readFile = promisify(fs.readFile);
@@ -188,7 +194,11 @@ export class DBankService {
   initTags(currentElement: Cheerio): TransactionTag[] {
     const transactionText = currentElement.text();
 
-    if (isDrugTransaction(transactionText)) {
+    if (isBroadcastTransaction(transactionText)) {
+      return [TransactionTag.BROADCAST];
+    } else if (isCinemaTransaction(transactionText)) {
+      return [TransactionTag.CINEMA];
+    } else if (isDrugTransaction(transactionText)) {
       return [TransactionTag.DRUG];
     } else if (isGroceryTransaction(transactionText)) {
       return [TransactionTag.GROCERY];
@@ -198,6 +208,14 @@ export class DBankService {
       return [TransactionTag.INTERNET];
     } else if (isPhoneTransaction(transactionText)) {
       return [TransactionTag.PHONE];
+    } else if (isPublicTransportTransaction(transactionText)) {
+      return [TransactionTag.PUBLIC_TRANSPORT];
+    } else if (isRentTransaction(transactionText)) {
+      return [TransactionTag.RENT];
+    } else if (isRestaurantTransaction(transactionText)) {
+      return [TransactionTag.RESTAURANT];
+    } else if (isWithdrawalTransaction(transactionText)) {
+      return [TransactionTag.WITHDRAWAL];
     } else {
       return [TransactionTag.OTHER];
     }
