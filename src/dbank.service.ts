@@ -173,7 +173,10 @@ export class DBankService {
       fileNameWithoutExtension,
     );
 
-    const monthStartBalance = await this.getMonthStartBalance({ month, year });
+    const monthStartBalance = await this.getMonthStartBalance(
+      { month, year },
+      html,
+    );
     return await this.writeMonthlyTransactionReportToFile(
       fileNameWithoutExtension,
       {
@@ -213,18 +216,33 @@ export class DBankService {
 
   async getMonthStartBalance(
     transactionMonthYear: TransactionMonthYear,
+    html: string,
   ): Promise<number> {
-    const previousMonthFileName: string = this.getPreviousFileName(
-      transactionMonthYear,
-    );
+    const { month, year } = transactionMonthYear;
 
-    try {
-      const previousMonthReport = await this.readJsonDataFileAsJson(
-        previousMonthFileName,
+    if (year + month < '201908') {
+      const previousMonthFileName: string = this.getPreviousFileName(
+        transactionMonthYear,
       );
-      return previousMonthReport.monthEndBalance;
-    } catch {
-      return 0;
+
+      try {
+        const previousMonthReport = await this.readJsonDataFileAsJson(
+          previousMonthFileName,
+        );
+        return previousMonthReport.monthEndBalance;
+      } catch {
+        return Promise.resolve(0);
+      }
+    } else {
+      const $: CheerioStatic = cheerio.load(html);
+
+      return Promise.resolve(
+        this.formatCurrencyValueAsNumber(
+          $('[headers="lB"]')
+            .text()
+            .trim(),
+        ),
+      );
     }
   }
 
