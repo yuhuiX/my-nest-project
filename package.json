@@ -26,6 +26,7 @@
     "@nestjs/websockets": "^6.0.4",
     "cheerio": "^1.0.0-rc.3",
     "fs-extra": "^8.0.1",
+    "papaparse": "5.1.1",
     "reflect-metadata": "0.1.13",
     "rimraf": "2.6.3",
     "rxjs": "6.4.0"
@@ -37,6 +38,7 @@
     "@types/fs-extra": "^7.0.0",
     "@types/jest": "24.0.11",
     "@types/node": "11.13.4",
+    "@types/papaparse": "5.0.3",
     "@types/supertest": "2.0.7",
     "concurrently": "^4.1.0",
     "jest": "24.7.1",
