@@ -44,10 +44,12 @@ export class DBankService {
   }
 
   constructTransactions(
-    $: CheerioStatic,
+    html: string,
     fileNameWithoutExtension: string,
   ): Transaction[] {
     if (fileNameWithoutExtension < '201408') {
+      const $: CheerioStatic = cheerio.load(`<table>${html}</table>`);
+
       return $('tr')
         .get()
         .map(element => {
@@ -68,6 +70,7 @@ export class DBankService {
           };
         });
     } else {
+      const $: CheerioStatic = cheerio.load(`<table>${html}</table>`);
       const transactionList = [];
 
       $('tr.odd, tr.even').each((index, element) => {
@@ -117,11 +120,12 @@ export class DBankService {
       year,
       month,
     );
-    const html = await this.readHtmlFileContent(fileNameWithoutExtension);
+    const html: string = await this.readHtmlFileContent(
+      fileNameWithoutExtension,
+    );
 
-    // won't work correctly without <table> as containing <tr>s and <td>s
     const transactions = this.constructTransactions(
-      cheerio.load(`<table>${html}</table>`),
+      html,
       fileNameWithoutExtension,
     );
 
