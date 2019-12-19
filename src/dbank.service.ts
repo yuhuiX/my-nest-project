@@ -69,9 +69,9 @@ export class DBankService {
             tags: [],
           };
         });
-    } else {
+    } else if (fileNameWithoutExtension < '201908') {
       const $: CheerioStatic = cheerio.load(`<table>${html}</table>`);
-      const transactionList = [];
+      const transactionList: Transaction[] = [];
 
       $('tr.odd, tr.even').each((index, element) => {
         const currentElement = $(element);
@@ -107,6 +107,50 @@ export class DBankService {
           });
         }
       });
+
+      return transactionList;
+    } else {
+      const $: CheerioStatic = cheerio.load(html);
+      const transactionList: Transaction[] = [];
+
+      $('table.sortable > tbody') // tbody added by cheerio as valid HTML
+        .find('> tr.odd, > tr.even')
+        .each((index, element) => {
+          const currentElement = $(element);
+          const prevElement = $(element).prev();
+
+          if (!currentElement.hasClass('hasSEPADetails')) {
+            const detailsText = prevElement.hasClass('hasSEPADetails')
+              ? this.resolveDetailsText(currentElement)
+              : '';
+            const tagHtml =
+              currentElement.html() +
+              (prevElement.hasClass('hasSEPADetails')
+                ? prevElement.html()
+                : '');
+            const transactionElement = prevElement.hasClass('hasSEPADetails')
+              ? prevElement
+              : currentElement;
+
+            transactionList.push({
+              bookingDate: this.decomposeDate(
+                $('[headers="bTentry"]', transactionElement).text(),
+              ),
+              credit: this.resolveCreditFromTransactionCheerio(
+                transactionElement,
+              ),
+              currency: $('[headers="bTcurrency"]', transactionElement).text(),
+              details: detailsText,
+              executionDate: this.decomposeDate(
+                $('[headers="bTvalue"]', transactionElement).text(),
+              ),
+              purpose: $('[headers="bTpurpose"]', transactionElement)
+                .text()
+                .trim(),
+              tags: this.initTags(cheerio(tagHtml)),
+            });
+          }
+        });
 
       return transactionList;
     }
