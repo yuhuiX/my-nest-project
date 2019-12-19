@@ -177,13 +177,16 @@ export class DBankService {
       { month, year },
       html,
     );
+    const monthEndBalance = this.getMonthEndBalance(
+      { month, year },
+      monthStartBalance,
+      transactions,
+      html,
+    );
     return await this.writeMonthlyTransactionReportToFile(
       fileNameWithoutExtension,
       {
-        monthEndBalance: this.calculateMonthEndBalance(
-          monthStartBalance,
-          transactions,
-        ),
+        monthEndBalance,
         monthStartBalance,
         transactions,
       },
@@ -212,6 +215,35 @@ export class DBankService {
   getMonthlyTransactionReport(): object {
     // TODO
     return { data: 'Hello Master!' };
+  }
+
+  getMonthEndBalance(
+    { month, year }: TransactionMonthYear,
+    monthStartBalance: number,
+    transactions: Transaction[],
+    html: string,
+  ): number {
+    const monthEndBalance: number = this.calculateMonthEndBalance(
+      monthStartBalance,
+      transactions,
+    );
+    if (year + month < '201908') {
+      return monthEndBalance;
+    } else {
+      const $: CheerioStatic = cheerio.load(html);
+
+      const monthEndBalanceFromHtml: number = this.formatCurrencyValueAsNumber(
+        $('[headers="aB"]')
+          .text()
+          .trim(),
+      );
+
+      if (monthEndBalance !== monthEndBalanceFromHtml) {
+        throw Error('UNMATCHED_MONTH_END_BALANCES');
+      }
+
+      return monthEndBalance;
+    }
   }
 
   async getMonthStartBalance(
