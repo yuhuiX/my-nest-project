@@ -1,29 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { promisify } from 'util';
-import * as fs from 'fs';
 import * as cheerio from 'cheerio';
+import * as fs from 'fs';
+
 import {
-  Transaction,
-  TransactionDate,
-  TransactionTag,
   MonthlyTransactionReport,
   MonthlyTransactionReportRequest,
+  Transaction,
+  TransactionDate,
   TransactionMonthYear,
-} from './dbank.model';
+} from './app.model';
 import { ensureFile, writeFile } from 'fs-extra';
-import {
-  isGroceryTransaction,
-  isIncomeTransaction,
-  isInternetTransaction,
-  isPhoneTransaction,
-  isDrugTransaction,
-  isWithdrawalTransaction,
-  isRentTransaction,
-  isRestaurantTransaction,
-  isPublicTransportTransaction,
-  isCinemaTransaction,
-  isBroadcastTransaction,
-} from './dbank.tagRules.service';
+
+import { Injectable } from '@nestjs/common';
+import { initTags } from './tagRules.service';
+import { promisify } from 'util';
 
 const readFile = promisify(fs.readFile);
 
@@ -103,7 +92,7 @@ export class DBankService {
             purpose: $('[headers="bTpurpose"]', transactionElement)
               .text()
               .trim(),
-            tags: this.initTags(cheerio(tagHtml)),
+            tags: initTags(cheerio(tagHtml).text()),
           });
         }
       });
@@ -147,7 +136,7 @@ export class DBankService {
               purpose: $('[headers="bTpurpose"]', transactionElement)
                 .text()
                 .trim(),
-              tags: this.initTags(cheerio(tagHtml)),
+              tags: initTags(cheerio(tagHtml).text()),
             });
           }
         });
@@ -286,36 +275,6 @@ export class DBankService {
       return `${fileNameYear}${fileNameMonth}`;
     } else {
       return (Number(year + month) - 1).toString();
-    }
-  }
-
-  initTags(currentElement: Cheerio): TransactionTag[] {
-    const transactionText = currentElement.text();
-
-    if (isBroadcastTransaction(transactionText)) {
-      return [TransactionTag.BROADCAST];
-    } else if (isCinemaTransaction(transactionText)) {
-      return [TransactionTag.CINEMA];
-    } else if (isDrugTransaction(transactionText)) {
-      return [TransactionTag.DRUG];
-    } else if (isGroceryTransaction(transactionText)) {
-      return [TransactionTag.GROCERY];
-    } else if (isIncomeTransaction(transactionText)) {
-      return [TransactionTag.INCOME];
-    } else if (isInternetTransaction(transactionText)) {
-      return [TransactionTag.INTERNET];
-    } else if (isPhoneTransaction(transactionText)) {
-      return [TransactionTag.PHONE];
-    } else if (isPublicTransportTransaction(transactionText)) {
-      return [TransactionTag.PUBLIC_TRANSPORT];
-    } else if (isRentTransaction(transactionText)) {
-      return [TransactionTag.RENT];
-    } else if (isRestaurantTransaction(transactionText)) {
-      return [TransactionTag.RESTAURANT];
-    } else if (isWithdrawalTransaction(transactionText)) {
-      return [TransactionTag.WITHDRAWAL];
-    } else {
-      return [TransactionTag.OTHER];
     }
   }
 

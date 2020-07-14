@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { DBankService } from './dbank.service';
-import { MonthlyTransactionReportRequest } from './dbank.model';
+import { MonthlyTransactionReportRequest } from './app.model';
 
 @Controller('dbank')
 export class DBankController {

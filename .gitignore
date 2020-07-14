@@ -62,7 +62,7 @@ typings/
 
 # transaction data
 data
-src/dbank.tagRules.service.ts
+src/tagRules.service.ts
 
 # build and dist
 dist

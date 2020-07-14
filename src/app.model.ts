@@ -16,7 +16,7 @@ export interface Transaction {
   details: string;
   executionDate: TransactionDate;
   purpose: string;
-  tags: string[];
+  tags: TransactionTag[];
 }
 
 export interface TransactionDate extends TransactionMonthYear {
@@ -41,4 +41,9 @@ export enum TransactionTag {
   RENT = 'RENT',
   RESTAURANT = 'RESTAURANT',
   WITHDRAWAL = 'WITHDRAWAL',
+}
+
+export interface WriteMonthlyTransactionReportToFileOptions {
+  fileName: string;
+  monthlyTransactionReport: MonthlyTransactionReport;
 }
