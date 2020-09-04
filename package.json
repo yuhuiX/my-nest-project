@@ -26,7 +26,7 @@
     "@nestjs/websockets": "7.3.2",
     "cheerio": "github:cheeriojs/cheerio#fbc5105b3c93b44463353a2c069ed666ba910241",
     "fs-extra": "^8.0.1",
-    "papaparse": "5.1.1",
+    "papaparse": "5.2.0",
     "reflect-metadata": "0.1.13",
     "rimraf": "2.6.3",
     "rxjs": "6.4.0"
