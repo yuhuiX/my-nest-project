@@ -22,7 +22,7 @@
     "@nestjs/common": "7.3.2",
     "@nestjs/core": "7.3.2",
     "@nestjs/microservices": "7.3.2",
-    "@nestjs/platform-express": "7.3.2",
+    "@nestjs/platform-express": "9.2.1",
     "@nestjs/websockets": "7.3.2",
     "cheerio": "github:cheeriojs/cheerio#fbc5105b3c93b44463353a2c069ed666ba910241",
     "fs-extra": "^8.0.1",
